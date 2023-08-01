@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Abstracts\TransferServiceInterface;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,4 +17,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::post('/transfer', [\App\Http\Controllers\TransferController::class, 'transferMoney']);
+Route::get('/getTransfers', function () {
+    $service = app(TransferServiceInterface::class);
+    dd($service->getOrderTransfers());
+});
+Route::get('/acceptTransfer', function () {
+    $service = app(TransferServiceInterface::class);
+    $service->acceptTransfer(1);
 });

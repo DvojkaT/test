@@ -2,6 +2,8 @@
 
 namespace App\Console;
 
+use App\Jobs\AcceptTransferJob;
+use App\Services\Abstracts\TransferServiceInterface;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -15,7 +17,15 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        // $schedule->command('inspire')->hourly();
+        $service = app(TransferServiceInterface::class);
+        $schedule->call(function () use ($service) {
+            $transfers = $service->getOrderTransfers();
+            foreach ($transfers as $transfer) {
+                if(!isset($transfer->send_date) || $transfer->send_date <= now()) {
+                    AcceptTransferJob::dispatch($transfer->id);
+                }
+            }
+        })->everyMinute();
     }
 
     /**
